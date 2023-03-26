@@ -54,7 +54,7 @@ int main(void)
 
     while (1)
     {
-        printf("Hello, world !!\n");
+        printf("Hello, world !!,Windows 10\n");
         _delay_ms(500);
     }
     return 0;
