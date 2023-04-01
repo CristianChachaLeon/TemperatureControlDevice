@@ -22,10 +22,24 @@ OBJ_DIR := $(BUILD_DIR)/obj
 HEXFILE := $(BIN_DIR)/$(PROJECT).hex
 ELFFILE := $(BIN_DIR)/$(PROJECT).elf
 
-# Source files
-SRC = main.c
+# Source files. Add directorry here
+SRC_DIR = ./
+INC_DIR = ./
+
+# Automatically find all .c files in the driver directory and its subdirectories
+DRIVER_DIR := ./drv
+SRC_DIR += .
+SRC_DIR += $(shell find $(DRIVER_DIR) -type d)
+SRC := $(foreach dir,$(SRC_DIR),$(wildcard $(dir)/*.c))
+
+# Automatically find all .h files in the driver directory and its subdirectories
+INC_DIR += $(shell find $(DRIVER_DIR) -type d)
+INC_DIR := $(addprefix -I,$(INC_DIR))
+INC := $(foreach dir,$(INC_DIR),$(wildcard $(dir)/*.h))
+
 OBJ =$(addprefix $(OBJ_DIR)/,$(SRC:.c=.o))
 DEP := $(OBJ:.o=.d)
+
 # Serial port
 PORT = COM3
 
@@ -35,10 +49,10 @@ OBJCOPY := avr-objcopy
 AVRDUDE := avrdude
 
 # Preprocesor Flags
-CPPFLAGs = -DF_CPU=16000000 -D__AVR_ATmega328P__
+CPPFLAGs = -DF_CPU=16000000 -D__AVR_ATmega328P__ $(INC_DIR)
 
 # Compiler Flags
-CFLAGs = -Os -Wall -Wextra -MMD
+CFLAGs = -mmcu=$(MCU) -Os -Wall -Wextra -MMD
 
 # Linker flags
 LDFLAGs = -mmcu=$(MCU)
@@ -70,5 +84,6 @@ $(ELFFILE): $(OBJ)
 $(OBJ_DIR)/%.o: %.c
 	mkdir -p $(@D)
 	$(CC) $(CFLAGs) $(CPPFLAGs) $< -c -o $@
+
 
 -include $(DEP)
